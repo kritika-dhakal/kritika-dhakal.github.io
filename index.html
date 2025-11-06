@@ -225,9 +225,9 @@
             $.scrollify({
                 section: ".panel",
                 scrollbars: false,
-                sectionName: "data-section-name", 
-                setHeights: true, 
-                setURL: true, 
+                sectionName: "section-name", // <- use a simple string key
+                setHeights: true,
+                setURL: true,
                 before: function(i, panels) {
                     var ref = panels[i].attr("data-section-name");
                     $(".pagination a").removeClass("active");
@@ -235,19 +235,25 @@
                 },
                 afterRender: function() {
                     var pagination = "<ul class=\"pagination\">";
+                    
                     $(".panel").each(function(i) {
                         var sectionName = $(this).attr("data-section-name");
                         var displayLabel = sectionName.charAt(0).toUpperCase() + sectionName.slice(1);
                         var activeClass = (i === $.scrollify.currentIndex()) ? "active" : "";
+                        
                         pagination += "<li><a class=\"" + activeClass + "\" href=\"#" + sectionName + "\"><span class=\"hover-text\">" + displayLabel + "</span></a></li>";
                     });
+                    
                     pagination += "</ul>";
+                    
                     $("body").append(pagination);
+            
                     $(".pagination a").on("click", function(e) {
                         e.preventDefault();
                         var targetSection = $(this).attr("href");
                         $.scrollify.move(targetSection);
                     });
+            
                     $('a[href*="#"]').not('.pagination a').on('click', function(e) {
                         var targetId = $(this).attr('href');
                         if (targetId.length > 1 && $(targetId).hasClass('panel')) {
