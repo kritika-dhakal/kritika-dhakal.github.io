@@ -87,6 +87,19 @@
             opacity: 1;
             visibility: visible;
         }
+        /* make the .standard-scroll-content a scrollable viewport-area
+        so internal content can be scrolled without breaking Scrollify */
+        .standard-scroll-content {
+        max-height: calc(100vh - 160px); /* leaves some space for paddings/headers — tweak 160px if needed */
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch; /* smooth scrolling on mobile */
+        padding-right: 8px; /* avoid layout jump when scrollbar appears on some browsers */
+        }
+
+        /* optional: keep the individual cards from changing height drastically */
+        .standard-scroll-content .p-8 {
+        min-height: 0;
+        }
     </style>
 </head>
 <body>
@@ -120,7 +133,7 @@
     </section>
 
     <section id="expertise" class="panel bg-expertise-bg" data-section-name="expertise">
-        <div class="container mx-auto px-4 max-w-7xl">
+        <div class="container mx-auto px-4 max-w-7xl standard-scroll-content">
             <h2 class="text-4xl font-heading font-light text-text-primary text-center mb-12"><i class="fas fa-tools text-accent-blue mr-3"></i> Core Expertise</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                 <div class="p-8 border border-gray-200 rounded-xl shadow-md bg-white transition duration-300 hover:shadow-xl hover:shadow-accent-blue/20 hover:border-accent-blue transform hover:-translate-y-1">
@@ -212,7 +225,7 @@
         </div>
     </section>
     
-    <footer class="bg-footer-dark text-white p-6 text-center font-body">
+    <footer id="footer" class="bg-footer-dark text-white p-6 text-center font-body" data-section-name="footer">
         <div class="container mx-auto">
             <p>© 2025 kritika.info.np | Professional Profile</p>
         </div>
@@ -222,82 +235,57 @@
     <script src="https://cdn.jsdelivr.net/npm/jquery-scrollify@1.0.21/jquery.scrollify.min.js"></script>
     <script>
         $(function() {
-            // $.scrollify({
-            //     section: ".panel",
-            //     scrollbars: false,
-            //     sectionName: "data-section-name", 
-            //     setHeights: true, 
-            //     setURL: true, 
-            //     before: function(i, panels) {
-            //         var ref = panels[i].attr("data-section-name");
-            //         $(".pagination a").removeClass("active");
-            //         $(".pagination").find("a[href=\"#" + ref + "\"]").addClass("active");
-            //     },
-            //     afterRender: function() {
-            //         var pagination = "<ul class=\"pagination\">";
-            //         $(".panel").each(function(i) {
-            //             var sectionName = $(this).attr("data-section-name");
-            //             var displayLabel = sectionName.charAt(0).toUpperCase() + sectionName.slice(1);
-            //             var activeClass = (i === $.scrollify.currentIndex()) ? "active" : "";
-            //             pagination += "<li><a class=\"" + activeClass + "\" href=\"#" + sectionName + "\"><span class=\"hover-text\">" + displayLabel + "</span></a></li>";
-            //         });
-            //         pagination += "</ul>";
-            //         $("body").append(pagination);
-            //         $(".pagination a").on("click", function(e) {
-            //             e.preventDefault();
-            //             var targetSection = $(this).attr("href");
-            //             $.scrollify.move(targetSection);
-            //         });
-            //         $('a[href*="#"]').not('.pagination a').on('click', function(e) {
-            //             var targetId = $(this).attr('href');
-            //             if (targetId.length > 1 && $(targetId).hasClass('panel')) {
-            //                 e.preventDefault();
-            //                 $.scrollify.move(targetId);
-            //             }
-            //         });
-            //     }
-            // });
-            $.scrollify({
-    section: ".panel",
-    scrollbars: false,
-    sectionName: "section-name", // <- use a simple string key
-    setHeights: true,
-    setURL: true,
-    before: function(i, panels) {
-        var ref = panels[i].attr("data-section-name");
-        $(".pagination a").removeClass("active");
-        $(".pagination").find("a[href=\"#" + ref + "\"]").addClass("active");
-    },
-    afterRender: function() {
-        var pagination = "<ul class=\"pagination\">";
-        
-        $(".panel").each(function(i) {
-            var sectionName = $(this).attr("data-section-name");
-            var displayLabel = sectionName.charAt(0).toUpperCase() + sectionName.slice(1);
-            var activeClass = (i === $.scrollify.currentIndex()) ? "active" : "";
-            
-            pagination += "<li><a class=\"" + activeClass + "\" href=\"#" + sectionName + "\"><span class=\"hover-text\">" + displayLabel + "</span></a></li>";
-        });
-        
-        pagination += "</ul>";
-        
-        $("body").append(pagination);
-
-        $(".pagination a").on("click", function(e) {
-            e.preventDefault();
-            var targetSection = $(this).attr("href");
-            $.scrollify.move(targetSection);
-        });
-
-        $('a[href*="#"]').not('.pagination a').on('click', function(e) {
-            var targetId = $(this).attr('href');
-            if (targetId.length > 1 && $(targetId).hasClass('panel')) {
-                e.preventDefault();
-                $.scrollify.move(targetId);
+            // adjust this value if you have a fixed header/footer or different paddings
+            $('.standard-scroll-content').css('max-height', 'calc(100vh - 160px)');
+            if ($.scrollify && $.scrollify.update) {
+                $.scrollify.update();
             }
-        });
-    }
-});
+            $.scrollify({
+                section: ".panel",
+                scrollbars: false,
+                sectionName: "section-name", // <- use a simple string key
+                standardScrollElements: ".standard-scroll-content",
+                interstitialSection : "footer",
+                setHeights: true,
+                overflowScroll: true,
+                updateHash: true,
+                
+                setURL: true,
+                before: function(i, panels) {
+                    var ref = panels[i].attr("data-section-name");
+                    $(".pagination a").removeClass("active");
+                    $(".pagination").find("a[href=\"#" + ref + "\"]").addClass("active");
+                },
+                afterRender: function() {
+                    var pagination = "<ul class=\"pagination\">";
+                    
+                    $(".panel").each(function(i) {
+                        var sectionName = $(this).attr("data-section-name");
+                        var displayLabel = sectionName.charAt(0).toUpperCase() + sectionName.slice(1);
+                        var activeClass = (i === $.scrollify.currentIndex()) ? "active" : "";
+                        
+                        pagination += "<li><a class=\"" + activeClass + "\" href=\"#" + sectionName + "\"><span class=\"hover-text\">" + displayLabel + "</span></a></li>";
+                    });
+                    
+                    pagination += "</ul>";
+                    
+                    $("body").append(pagination);
+
+                    $(".pagination a").on("click", function(e) {
+                        e.preventDefault();
+                        var targetSection = $(this).attr("href");
+                        $.scrollify.move(targetSection);
+                    });
+
+                    $('a[href*="#"]').not('.pagination a').on('click', function(e) {
+                        var targetId = $(this).attr('href');
+                        if (targetId.length > 1 && $(targetId).hasClass('panel')) {
+                            e.preventDefault();
+                            $.scrollify.move(targetId);
+                        }
+                    });
+                }
+            });
 
         });
     </script>
